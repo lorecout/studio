@@ -5,4 +5,5 @@ export type Transaction = {
   category: string;
   type: 'expense' | 'income';
   date: string; // ISO date string
+  status: 'paid' | 'pending';
 };

@@ -46,7 +46,8 @@ export default function QuickAddClient() {
     const newTransactions: Transaction[] = parsedTransactions.map(tx => ({
         ...tx,
         id: crypto.randomUUID(),
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        status: tx.type === 'income' ? 'paid' : 'pending' // Income is auto-confirmed, expense is pending
     }));
 
     setTransactions([...transactions, ...newTransactions]);

@@ -14,7 +14,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 
 function formatCurrency(amount: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
@@ -30,24 +32,82 @@ function formatDate(dateString: string) {
     });
 }
 
+function BalanceCard({ title, value, variant, className }: { title: string, value: number, variant: 'income' | 'expense' | 'balance', className?: string }) {
+    const variantClasses = {
+        income: 'text-green-600',
+        expense: 'text-destructive',
+        balance: 'text-primary'
+    };
+
+    return (
+        <Card className={className}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className={`text-2xl font-bold ${variantClasses[variant]}`}>{formatCurrency(value)}</div>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function TransactionsClient() {
-  const [transactions, _, isLoading] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
+  const [transactions, setTransactions, isLoading] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
 
   const sortedTransactions = transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const handleConfirmPayment = (txId: string) => {
+    setTransactions(transactions.map(tx => tx.id === txId ? { ...tx, status: 'paid' } : tx));
+  };
+  
+  const { totalIncome, totalExpense, balance } = useMemo(() => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach(tx => {
+        if(tx.status !== 'paid') return;
+
+        if (tx.type === 'income') {
+            totalIncome += tx.amount;
+        } else {
+            totalExpense += tx.amount;
+        }
+    });
+
+    const balance = totalIncome - totalExpense;
+    return { totalIncome, totalExpense, balance };
+  }, [transactions]);
+
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <header className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold font-headline">Histórico de Transações</h1>
-        <p className="text-muted-foreground">Veja todas as suas movimentações financeiras.</p>
+        <h1 className="text-2xl md:text-3xl font-bold font-headline">Painel Financeiro</h1>
+        <p className="text-muted-foreground">Acompanhe suas receitas, despesas e o balanço geral.</p>
       </header>
+
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
+        {isLoading ? (
+            <>
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+            </>
+        ) : (
+            <>
+                <BalanceCard title="Receitas (Confirmadas)" value={totalIncome} variant="income" />
+                <BalanceCard title="Despesas (Pagas)" value={totalExpense} variant="expense" />
+                <BalanceCard title="Saldo" value={balance} variant="balance" />
+            </>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Transações Recentes</CardTitle>
+          <CardTitle>Histórico de Transações</CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[60vh]">
+          <ScrollArea className="h-[50vh]">
             {isLoading ? (
                  <div className="space-y-4">
                     {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
@@ -58,8 +118,10 @@ export default function TransactionsClient() {
                   <TableRow>
                     <TableHead>Descrição</TableHead>
                     <TableHead>Categoria</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="hidden md:table-cell text-right">Data</TableHead>
+                    <TableHead className="text-right">Ação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -67,16 +129,35 @@ export default function TransactionsClient() {
                     <TableRow key={tx.id}>
                       <TableCell>
                         <div className="font-medium">{tx.description}</div>
-                        <div className="block md:hidden text-xs text-muted-foreground">{formatDate(tx.date)}</div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">{tx.category}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {tx.status === 'paid' ? (
+                          <Badge variant="secondary" className="text-green-700 bg-green-100">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            Confirmado
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-amber-700 bg-amber-100">
+                             <Clock className="mr-1 h-3 w-3" />
+                            Pendente
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className={`text-right font-medium ${tx.type === 'expense' ? 'text-destructive' : 'text-green-600'}`}>
                         {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}
                       </TableCell>
                        <TableCell className="hidden md:table-cell text-right text-muted-foreground">
                         {formatDate(tx.date)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {tx.status === 'pending' && (
+                          <Button variant="ghost" size="sm" onClick={() => handleConfirmPayment(tx.id)}>
+                            Confirmar
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
