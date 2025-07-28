@@ -68,9 +68,9 @@ export default function TransactionsClient() {
 
   const handleSaveTransaction = (data: Omit<Transaction, "id" | "status">) => {
     const newTransaction: Transaction = {
-      ...data,
       id: crypto.randomUUID(),
       status: data.type === 'income' ? 'paid' : 'pending',
+      ...data,
     };
     setTransactions([...transactions, newTransaction]);
     setDialogOpen(false);
