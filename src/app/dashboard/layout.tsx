@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Target, MoreVertical, LogOut, ArrowLeftRight } from "lucide-react";
+import { Target, MoreVertical, LogOut, ArrowLeftRight, Sparkles } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -62,6 +62,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link href="/dashboard/transactions">
                   <ArrowLeftRight />
                   <span>Transações</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/analyst")}>
+                <Link href="/dashboard/analyst">
+                  <Sparkles />
+                  <span>Análise com IA</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
