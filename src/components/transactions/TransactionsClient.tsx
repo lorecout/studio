@@ -197,7 +197,7 @@ export default function TransactionsClient() {
                   <ArrowLeftRight className="h-10 w-10 text-primary" />
                 </div>
                 <h2 className="text-xl font-semibold mb-2">Nenhuma transação encontrada</h2>
-                <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manualmente sua primeira transação.</p>
+                <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manually sua primeira transação.</p>
               </div>
             )}
           </ScrollArea>
