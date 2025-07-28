@@ -166,12 +166,12 @@ export default function TransactionsClient() {
                           <Badge variant="secondary" className="text-green-700 bg-green-100">
                             <CheckCircle className="mr-1 h-3 w-3" />
                             Confirmado
-                          </badge>
+                          </Badge>
                         ) : (
                           <Badge variant="secondary" className="text-amber-700 bg-amber-100">
                             <Clock className="mr-1 h-3 w-3" />
                             Pendente
-                          </badge>
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className={`text-right font-medium ${tx.type === 'expense' ? 'text-destructive' : 'text-green-600'}`}>
