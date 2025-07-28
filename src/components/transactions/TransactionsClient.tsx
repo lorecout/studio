@@ -33,7 +33,14 @@ function formatDate(dateString: string) {
     });
 }
 
-function BalanceCard({ title, value, variant, className }: { title: string, value: number, variant: 'income' | 'expense' | 'balance', className?: string }) {
+interface BalanceCardProps {
+    title: string;
+    value: number;
+    variant: 'income' | 'expense' | 'balance';
+    className?: string;
+}
+
+function BalanceCard({ title, value, variant, className }: BalanceCardProps) {
     const variantClasses = {
         income: 'text-green-600',
         expense: 'text-destructive',
@@ -61,9 +68,12 @@ export default function TransactionsClient() {
     return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions]);
 
-
   const handleConfirmPayment = (txId: string) => {
-    setTransactions(transactions.map(tx => tx.id === txId ? { ...tx, status: 'paid' } : tx));
+    setTransactions(
+      (transactions ?? []).map(tx =>
+        tx.id === txId ? { ...tx, status: 'paid' } : tx
+      )
+    );
   };
 
   const handleSaveTransaction = (data: Omit<Transaction, "id" | "status">) => {
@@ -75,57 +85,51 @@ export default function TransactionsClient() {
     setTransactions((prevTxs) => [...(prevTxs || []), newTransaction]);
     setDialogOpen(false);
   };
-  
+
   const { totalIncome, totalExpense, balance } = useMemo(() => {
-    let totalIncome = 0;
-    let totalExpense = 0;
-
-    if (transactions) {
-        transactions.forEach(tx => {
-            if(tx.status !== 'paid' && tx.type === 'expense') return;
-
-            if (tx.type === 'income') {
-                totalIncome += tx.amount;
-            } else {
-                totalExpense += tx.amount;
-            }
-        });
-    }
-
-    const balance = totalIncome - totalExpense;
-    return { totalIncome, totalExpense, balance };
+    if (!transactions) return { totalIncome: 0, totalExpense: 0, balance: 0 };
+    
+    const { income, expense } = transactions.reduce(
+      (totals, tx) => {
+        if (tx.type === 'income' && tx.status === 'paid') {
+          totals.income += tx.amount;
+        } else if (tx.type === 'expense' && tx.status === 'paid') {
+          totals.expense += tx.amount;
+        }
+        return totals;
+      },
+      { income: 0, expense: 0 }
+    );
+    return { totalIncome: income, totalExpense: expense, balance: income - expense };
   }, [transactions]);
-
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-            <h1 className="text-2xl md:text-3xl font-bold font-headline">Painel Financeiro</h1>
-            <p className="text-muted-foreground">Acompanhe suas receitas, despesas e o balanço geral.</p>
+          <h1 className="text-2xl md:text-3xl font-bold font-headline">Painel Financeiro</h1>
+          <p className="text-muted-foreground">Acompanhe suas receitas, despesas e o balanço geral.</p>
         </div>
         <Button onClick={() => setDialogOpen(true)} className="w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Adicionar Transação
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Adicionar Transação
         </Button>
       </header>
-
       <div className="grid gap-4 md:grid-cols-3 mb-8">
         {isLoading ? (
-            <>
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-            </>
+          <>
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </>
         ) : (
-            <>
-                <BalanceCard title="Receitas (Confirmadas)" value={totalIncome} variant="income" />
-                <BalanceCard title="Despesas (Pagas)" value={totalExpense} variant="expense" />
-                <BalanceCard title="Saldo" value={balance} variant="balance" />
-            </>
+          <>
+            <BalanceCard title="Receitas (Confirmadas)" value={totalIncome} variant="income" />
+            <BalanceCard title="Despesas (Pagas)" value={totalExpense} variant="expense" />
+            <BalanceCard title="Saldo" value={balance} variant="balance" />
+          </>
         )}
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Transações</CardTitle>
@@ -133,9 +137,9 @@ export default function TransactionsClient() {
         <CardContent>
           <ScrollArea className="h-[50vh]">
             {isLoading ? (
-                 <div className="space-y-4">
-                    {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-                </div>
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              </div>
             ) : sortedTransactions.length > 0 ? (
               <Table>
                 <TableHeader>
@@ -165,7 +169,7 @@ export default function TransactionsClient() {
                           </badge>
                         ) : (
                           <Badge variant="secondary" className="text-amber-700 bg-amber-100">
-                             <Clock className="mr-1 h-3 w-3" />
+                            <Clock className="mr-1 h-3 w-3" />
                             Pendente
                           </badge>
                         )}
@@ -173,7 +177,7 @@ export default function TransactionsClient() {
                       <TableCell className={`text-right font-medium ${tx.type === 'expense' ? 'text-destructive' : 'text-green-600'}`}>
                         {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}
                       </TableCell>
-                       <TableCell className="hidden md:table-cell text-right text-muted-foreground">
+                      <TableCell className="hidden md:table-cell text-right text-muted-foreground">
                         {formatDate(tx.date)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -188,13 +192,13 @@ export default function TransactionsClient() {
                 </TableBody>
               </Table>
             ) : (
-                <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
-                    <div className="bg-primary/10 p-4 rounded-full mb-4">
-                        <ArrowLeftRight className="h-10 w-10 text-primary" />
-                    </div>
-                    <h2 className="text-xl font-semibold mb-2">Nenhuma transação encontrada</h2>
-                    <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manually sua primeira transação.</p>
+              <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
+                <div className="bg-primary/10 p-4 rounded-full mb-4">
+                  <ArrowLeftRight className="h-10 w-10 text-primary" />
                 </div>
+                <h2 className="text-xl font-semibold mb-2">Nenhuma transação encontrada</h2>
+                <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manualmente sua primeira transação.</p>
+              </div>
             )}
           </ScrollArea>
         </CardContent>
