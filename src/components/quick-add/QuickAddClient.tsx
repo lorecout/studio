@@ -16,6 +16,17 @@ function formatCurrency(amount: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
 }
 
+function formatDate(dateString?: string) {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() + userTimezoneOffset).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+}
+
 export default function QuickAddClient() {
   const [text, setText] = useState("");
   const [parsedTransactions, setParsedTransactions] = useState<QuickAddOutput['transactions']>([]);
@@ -46,7 +57,7 @@ export default function QuickAddClient() {
     const newTransactions: Transaction[] = parsedTransactions.map(tx => ({
         ...tx,
         id: crypto.randomUUID(),
-        date: new Date().toISOString(),
+        date: tx.date || new Date().toISOString(),
         status: tx.type === 'income' ? 'paid' : 'pending' // Income is auto-confirmed, expense is pending
     }));
 
@@ -73,7 +84,7 @@ export default function QuickAddClient() {
             <CardHeader>
               <CardTitle>1. Insira os dados</CardTitle>
               <CardDescription>
-                Ex: "Padaria 25.50, Salário 5000, Aluguel 1500". Uma linha por item funciona melhor.
+                Ex: "Padaria 25.50, Salário 5000, Aluguel 1500 vence dia 10". Uma linha por item funciona melhor.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -109,15 +120,22 @@ export default function QuickAddClient() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Descrição</TableHead>
-                                    <TableHead>Categoria</TableHead>
+                                    <TableHead>Data</TableHead>
                                     <TableHead className="text-right">Valor</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {parsedTransactions.map((tx, index) => (
                                     <TableRow key={index}>
-                                        <TableCell>{tx.description}</TableCell>
-                                        <TableCell><Badge variant="outline">{tx.category}</Badge></TableCell>
+                                        <TableCell>
+                                            <div className="font-medium">{tx.description}</div>
+                                            <div className="text-sm text-muted-foreground">{tx.category}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={tx.date ? "outline" : "secondary"}>
+                                                {tx.date ? formatDate(tx.date) : "Hoje"}
+                                            </Badge>
+                                        </TableCell>
                                         <TableCell className={`text-right font-medium ${tx.type === 'expense' ? 'text-destructive' : 'text-green-600'}`}>{formatCurrency(tx.amount)}</TableCell>
                                     </TableRow>
                                 ))}
