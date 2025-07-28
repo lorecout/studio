@@ -73,7 +73,7 @@ export default function TransactionsClient() {
                         <Badge variant="outline">{tx.category}</Badge>
                       </TableCell>
                       <TableCell className={`text-right font-medium ${tx.type === 'expense' ? 'text-destructive' : 'text-green-600'}`}>
-                        {formatCurrency(tx.amount)}
+                        {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}
                       </TableCell>
                        <TableCell className="hidden md:table-cell text-right text-muted-foreground">
                         {formatDate(tx.date)}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Target, MoreVertical, LogOut, ArrowLeftRight, Sparkles } from "lucide-react";
+import { Target, MoreVertical, LogOut, ArrowLeftRight, Sparkles, FileInput } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -70,6 +70,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link href="/dashboard/analyst">
                   <Sparkles />
                   <span>Análise com IA</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/quick-add")}>
+                <Link href="/dashboard/quick-add">
+                  <FileInput />
+                  <span>Importação Rápida</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
