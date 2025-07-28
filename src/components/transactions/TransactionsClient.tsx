@@ -57,6 +57,7 @@ export default function TransactionsClient() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const sortedTransactions = useMemo(() => {
+    if (!transactions) return [];
     return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions]);
 
@@ -79,15 +80,17 @@ export default function TransactionsClient() {
     let totalIncome = 0;
     let totalExpense = 0;
 
-    transactions.forEach(tx => {
-        if(tx.status !== 'paid' && tx.type === 'expense') return;
+    if (transactions) {
+        transactions.forEach(tx => {
+            if(tx.status !== 'paid' && tx.type === 'expense') return;
 
-        if (tx.type === 'income') {
-            totalIncome += tx.amount;
-        } else {
-            totalExpense += tx.amount;
-        }
-    });
+            if (tx.type === 'income') {
+                totalIncome += tx.amount;
+            } else {
+                totalExpense += tx.amount;
+            }
+        });
+    }
 
     const balance = totalIncome - totalExpense;
     return { totalIncome, totalExpense, balance };
@@ -159,7 +162,7 @@ export default function TransactionsClient() {
                           <Badge variant="secondary" className="text-green-700 bg-green-100">
                             <CheckCircle className="mr-1 h-3 w-3" />
                             Confirmado
-                          </Badge>
+                          </badge>
                         ) : (
                           <Badge variant="secondary" className="text-amber-700 bg-amber-100">
                              <Clock className="mr-1 h-3 w-3" />
