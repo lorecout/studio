@@ -40,7 +40,7 @@ interface GoalDialogProps {
 const goalSchema = z.object({
   name: z.string().min(1, { message: "O nome da meta é obrigatório." }),
   totalAmount: z.coerce.number().min(1, { message: "O valor total deve ser maior que zero." }),
-  initialAmount: z.coerce.number().min(0).optional(),
+  initialAmount: z.coerce.number().min(0).optional().default(0),
   deadline: z.date({ required_error: "A data final é obrigatória." }),
 });
 
