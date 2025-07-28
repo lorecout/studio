@@ -5,7 +5,7 @@ import { type Goal } from "@/types/goal";
 import { type Transaction } from "@/types/transaction";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Target } from "lucide-react";
 import GoalCard from "./GoalCard";
 import GoalDialog from "./GoalDialog";
 import AddAmountDialog from "./AddAmountDialog";
