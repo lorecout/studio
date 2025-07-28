@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Target, MoreVertical, LogOut } from "lucide-react";
+import { Target, MoreVertical, LogOut, ArrowLeftRight } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -13,7 +13,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -55,6 +54,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link href="/dashboard/goals">
                   <Target />
                   <span>Metas</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/transactions")}>
+                <Link href="/dashboard/transactions">
+                  <ArrowLeftRight />
+                  <span>Transações</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
