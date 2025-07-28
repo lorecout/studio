@@ -11,12 +11,12 @@ import { ai } from '@/ai/genkit';
 import { Goal, GoalSchema } from '@/types/goal';
 import { z } from 'zod';
 
-export const GoalAnalystInputSchema = z.object({
+const GoalAnalystInputSchema = z.object({
   goals: z.array(GoalSchema),
 });
 export type GoalAnalystInput = z.infer<typeof GoalAnalystInputSchema>;
 
-export const GoalAnalystOutputSchema = z.object({
+const GoalAnalystOutputSchema = z.object({
   analysis: z.
     string()
     .describe(
