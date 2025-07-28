@@ -72,7 +72,7 @@ export default function TransactionsClient() {
       status: data.type === 'income' ? 'paid' : 'pending',
       ...data,
     };
-    setTransactions([...transactions, newTransaction]);
+    setTransactions((prevTxs) => [...(prevTxs || []), newTransaction]);
     setDialogOpen(false);
   };
   
