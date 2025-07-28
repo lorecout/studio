@@ -88,7 +88,7 @@ export default function TransactionsClient() {
                         <ArrowLeftRight className="h-10 w-10 text-primary" />
                     </div>
                     <h2 className="text-xl font-semibold mb-2">Nenhuma transação encontrada</h2>
-                    <p className="text-muted-foreground mb-4 max-w-sm">Quando você adicionar dinheiro a uma meta, a transação aparecerá aqui.</p>
+                    <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" para adicionar suas primeiras transações.</p>
                 </div>
             )}
           </ScrollArea>

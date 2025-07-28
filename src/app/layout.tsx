@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'RealGoal',
-  description: 'Atinga suas metas financeiras',
+  title: 'CustoCerto',
+  description: 'Gerencie seus custos de forma inteligente',
 };
 
 export default function RootLayout({

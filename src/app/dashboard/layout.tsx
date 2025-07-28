@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Target, MoreVertical, LogOut, ArrowLeftRight, Sparkles, FileInput } from "lucide-react";
+import { MoreVertical, LogOut, ArrowLeftRight, FileInput } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -19,7 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 
 const Logo = () => (
-    <Link href="/dashboard/goals" className="flex items-center gap-2 font-semibold">
+    <Link href="/dashboard/transactions" className="flex items-center gap-2 font-semibold">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -34,7 +34,7 @@ const Logo = () => (
             <path d="M2 17l10 5 10-5" />
             <path d="M2 12l10 5 10-5" />
         </svg>
-        <span className="text-lg font-headline">RealGoal</span>
+        <span className="text-lg font-headline">CustoCerto</span>
     </Link>
 );
 
@@ -49,27 +49,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/goals")}>
-                <Link href="/dashboard/goals">
-                  <Target />
-                  <span>Metas</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
              <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/transactions")}>
                 <Link href="/dashboard/transactions">
                   <ArrowLeftRight />
                   <span>Transações</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/analyst")}>
-                <Link href="/dashboard/analyst">
-                  <Sparkles />
-                  <span>Análise com IA</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -93,7 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </Avatar>
                         <div className="flex flex-col text-left">
                             <span className="text-sm font-medium">Usuário Convidado</span>
-                            <span className="text-xs text-sidebar-foreground/70">guest@realgoal.com</span>
+                            <span className="text-xs text-sidebar-foreground/70">guest@custocerto.com</span>
                         </div>
                         <MoreVertical className="ml-auto h-5 w-5" />
                     </Button>
