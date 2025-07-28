@@ -69,8 +69,8 @@ export default function TransactionsClient() {
   }, [transactions]);
 
   const handleConfirmPayment = (txId: string) => {
-    setTransactions(
-      (transactions ?? []).map(tx =>
+    setTransactions((currentTransactions) =>
+      (currentTransactions ?? []).map(tx =>
         tx.id === txId ? { ...tx, status: 'paid' } : tx
       )
     );
