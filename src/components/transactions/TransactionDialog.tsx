@@ -34,8 +34,8 @@ import { useEffect } from "react";
 interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: Omit<Transaction, "id" | "status">) => void;
-  transactionToEdit: Omit<Transaction, "id" | "status"> | null;
+  onSave: (data: Omit<Transaction, "id" | "status" | "userId">) => void;
+  transactionToEdit: Omit<Transaction, "id" | "status" | "userId"> | null;
 }
 
 const transactionSchema = z.object({

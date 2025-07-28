@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { quickAddTransactions, type QuickAddOutput } from "@/ai/flows/quick-add-flow";
 import { Loader2, Wand2, FileInput } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 function formatCurrency(amount: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
@@ -33,6 +34,7 @@ export default function QuickAddClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleProcessText = async () => {
     if (!text.trim()) return;
@@ -54,11 +56,13 @@ export default function QuickAddClient() {
   };
 
   const handleAddTransactions = () => {
+    if (!user) return;
     const newTransactions: Transaction[] = parsedTransactions.map(tx => ({
         ...tx,
         id: crypto.randomUUID(),
         date: tx.date || new Date().toISOString(),
-        status: tx.type === 'income' ? 'paid' : 'pending' // Income is auto-confirmed, expense is pending
+        status: tx.type === 'income' ? 'paid' : 'pending',
+        userId: user.uid,
     }));
 
     setTransactions([...transactions, ...newTransactions]);

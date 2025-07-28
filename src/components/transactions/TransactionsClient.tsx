@@ -18,6 +18,8 @@ import { ArrowLeftRight, CheckCircle, Clock, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import TransactionDialog from "./TransactionDialog";
+import { useAuth } from "@/hooks/use-auth";
+
 
 function formatCurrency(amount: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
@@ -60,13 +62,16 @@ function BalanceCard({ title, value, variant, className }: BalanceCardProps) {
 }
 
 export default function TransactionsClient() {
+  const { user } = useAuth();
   const [transactions, setTransactions, isLoading] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const sortedTransactions = useMemo(() => {
-    if (!transactions) return [];
-    return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions]);
+  const userTransactions = useMemo(() => {
+    if (!transactions || !user) return [];
+    return [...transactions]
+        .filter(tx => tx.userId === user.uid)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions, user]);
 
   const handleConfirmPayment = (txId: string) => {
     setTransactions((currentTransactions) =>
@@ -76,10 +81,12 @@ export default function TransactionsClient() {
     );
   };
 
-  const handleSaveTransaction = (data: Omit<Transaction, "id" | "status">) => {
+  const handleSaveTransaction = (data: Omit<Transaction, "id" | "status" | "userId">) => {
+    if (!user) return;
     const newTransaction: Transaction = {
       id: crypto.randomUUID(),
       status: data.type === 'income' ? 'paid' : 'pending',
+      userId: user.uid,
       ...data,
     };
     setTransactions((prevTxs) => [...(prevTxs || []), newTransaction]);
@@ -87,9 +94,9 @@ export default function TransactionsClient() {
   };
 
   const { totalIncome, totalExpense, balance } = useMemo(() => {
-    if (!transactions) return { totalIncome: 0, totalExpense: 0, balance: 0 };
+    if (!userTransactions) return { totalIncome: 0, totalExpense: 0, balance: 0 };
     
-    const { income, expense } = transactions.reduce(
+    const { income, expense } = userTransactions.reduce(
       (totals, tx) => {
         if (tx.type === 'income' && tx.status === 'paid') {
           totals.income += tx.amount;
@@ -101,7 +108,7 @@ export default function TransactionsClient() {
       { income: 0, expense: 0 }
     );
     return { totalIncome: income, totalExpense: expense, balance: income - expense };
-  }, [transactions]);
+  }, [userTransactions]);
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
@@ -140,7 +147,7 @@ export default function TransactionsClient() {
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
               </div>
-            ) : sortedTransactions.length > 0 ? (
+            ) : userTransactions.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -153,7 +160,7 @@ export default function TransactionsClient() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedTransactions.map((tx) => (
+                  {userTransactions.map((tx) => (
                     <TableRow key={tx.id}>
                       <TableCell>
                         <div className="font-medium">{tx.description}</div>
@@ -197,7 +204,7 @@ export default function TransactionsClient() {
                   <ArrowLeftRight className="h-10 w-10 text-primary" />
                 </div>
                 <h2 className="text-xl font-semibold mb-2">Nenhuma transação encontrada</h2>
-                <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manually sua primeira transação.</p>
+                <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manualmente sua primeira transação.</p>
               </div>
             )}
           </ScrollArea>

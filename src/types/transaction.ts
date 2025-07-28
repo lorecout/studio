@@ -6,4 +6,5 @@ export type Transaction = {
   type: 'expense' | 'income';
   date: string; // ISO date string
   status: 'paid' | 'pending';
+  userId: string;
 };

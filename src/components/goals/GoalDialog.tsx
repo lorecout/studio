@@ -33,7 +33,7 @@ import { useEffect } from "react";
 interface GoalDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: Omit<Goal, "id" | "currentAmount"> & { initialAmount: number }) => void;
+  onSave: (data: Omit<Goal, "id" | "currentAmount" | "userId"> & { initialAmount: number }) => void;
   goalToEdit: Goal | null;
 }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MoreVertical, LogOut, ArrowLeftRight, FileInput } from "lucide-react";
+import { MoreVertical, LogOut, ArrowLeftRight, FileInput, Target, Bot } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth"; // Changed
 
 const Logo = () => (
     <Link href="/dashboard/transactions" className="flex items-center gap-2 font-semibold">
@@ -40,6 +41,15 @@ const Logo = () => (
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, loading, logout } = useAuth(); // Changed
+
+  if (loading) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
+        </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -57,6 +67,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/goals")}>
+                    <Link href="/dashboard/goals">
+                        <Target/>
+                        <span>Metas</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
              <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/quick-add")}>
                 <Link href="/dashboard/quick-add">
@@ -65,6 +83,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname.startsWith("/dashboard/analyst")}>
+                    <Link href="/dashboard/analyst">
+                        <Bot/>
+                        <span>Análise IA</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
@@ -72,18 +98,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-auto w-full justify-start gap-3 p-2 text-left">
                         <Avatar className="h-9 w-9">
-                            <AvatarImage src="https://placehold.co/36x36" alt="User Avatar" />
-                            <AvatarFallback>U</AvatarFallback>
+                            <AvatarImage src={user?.photoURL || "https://placehold.co/36x36"} alt="User Avatar" />
+                            <AvatarFallback>{user?.email?.[0].toUpperCase() || "U"}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col text-left">
-                            <span className="text-sm font-medium">Usuário Convidado</span>
-                            <span className="text-xs text-sidebar-foreground/70">guest@custocerto.com</span>
+                            <span className="text-sm font-medium truncate">{user?.displayName || user?.email || "Usuário"}</span>
+                            <span className="text-xs text-sidebar-foreground/70 truncate">{user?.email || 'Não autenticado'}</span>
                         </div>
                         <MoreVertical className="ml-auto h-5 w-5" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="mb-2 w-56" side="top" align="start">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={logout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         Sair
                     </DropdownMenuItem>

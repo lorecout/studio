@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import React from 'react';
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { type Goal } from "@/types/goal";
@@ -10,12 +10,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { analyzeGoals } from "@/ai/flows/goal-analyst-flow";
 import { Skeleton } from "@/components/ui/skeleton";
 import Markdown from "@/components/ui/markdown";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AnalystClient() {
-  const [goals, _, goalsLoading] = useLocalStorage<Goal[]>("realgoal-goals", []);
+  const { user } = useAuth();
+  const [allGoals, _, goalsLoading] = useLocalStorage<Goal[]>("realgoal-goals", []);
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const goals = useMemo(() => {
+    if (!user) return [];
+    return allGoals.filter(g => g.userId === user.uid);
+  }, [allGoals, user]);
 
   const handleAnalyze = async () => {
     setIsLoading(true);

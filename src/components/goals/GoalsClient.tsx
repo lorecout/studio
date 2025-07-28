@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { type Goal } from "@/types/goal";
 import { type Transaction } from "@/types/transaction";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -10,8 +10,10 @@ import GoalCard from "./GoalCard";
 import GoalDialog from "./GoalDialog";
 import AddAmountDialog from "./AddAmountDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function GoalsClient() {
+  const { user } = useAuth();
   const [goals, setGoals, goalsLoading] = useLocalStorage<Goal[]>("realgoal-goals", []);
   const [transactions, setTransactions, txsLoading] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
   
@@ -19,6 +21,11 @@ export default function GoalsClient() {
   const [addAmountDialogOpen, setAddAmountDialogOpen] = useState(false);
   
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+
+  const userGoals = useMemo(() => {
+      if (!user) return [];
+      return goals.filter(g => g.userId === user.uid);
+  }, [goals, user]);
 
   const handleCreateGoal = () => {
     setSelectedGoal(null);
@@ -39,7 +46,10 @@ export default function GoalsClient() {
     setAddAmountDialogOpen(true);
   };
 
-  const handleSaveGoal = (goalData: Omit<Goal, "id" | "currentAmount"> & { id?: string, initialAmount: number }) => {
+  const handleSaveGoal = (goalData: Omit<Goal, "id" | "currentAmount" | "userId"> & { id?: string, initialAmount: number }) => {
+    const userId = user?.uid;
+    if (!userId) return;
+
     if (selectedGoal) { // Editing existing goal
       setGoals(
         goals.map((g) =>
@@ -55,6 +65,7 @@ export default function GoalsClient() {
         totalAmount: goalData.totalAmount,
         currentAmount: goalData.initialAmount || 0,
         deadline: goalData.deadline,
+        userId: userId,
       };
       setGoals([...goals, newGoal]);
       if (goalData.initialAmount > 0) {
@@ -65,6 +76,8 @@ export default function GoalsClient() {
           category: "Investimentos/Metas",
           type: 'expense',
           date: new Date().toISOString(),
+          userId: userId,
+          status: 'paid'
         };
         setTransactions([...transactions, newTransaction]);
       }
@@ -74,7 +87,7 @@ export default function GoalsClient() {
   };
 
   const handleAddAmount = (amount: number) => {
-    if (!selectedGoal) return;
+    if (!selectedGoal || !user) return;
 
     const newTransaction: Transaction = {
       id: crypto.randomUUID(),
@@ -83,6 +96,8 @@ export default function GoalsClient() {
       category: "Investimentos/Metas",
       type: 'expense',
       date: new Date().toISOString(),
+      userId: user.uid,
+      status: 'paid'
     };
     setTransactions([...transactions, newTransaction]);
 
@@ -115,9 +130,9 @@ export default function GoalsClient() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-56 w-full rounded-lg" />)}
         </div>
-      ) : goals.length > 0 ? (
+      ) : userGoals.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {goals.map((goal) => (
+          {userGoals.map((goal) => (
             <GoalCard
               key={goal.id}
               goal={goal}
