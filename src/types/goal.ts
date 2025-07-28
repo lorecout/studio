@@ -1,7 +1,11 @@
-export type Goal = {
-  id: string;
-  name: string;
-  totalAmount: number;
-  currentAmount: number;
-  deadline: string; // ISO date string
-};
+import { z } from 'zod';
+
+export const GoalSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  totalAmount: z.number(),
+  currentAmount: z.number(),
+  deadline: z.string(), // ISO date string
+});
+
+export type Goal = z.infer<typeof GoalSchema>;
