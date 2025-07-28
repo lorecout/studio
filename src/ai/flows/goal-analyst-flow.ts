@@ -31,15 +31,6 @@ export async function analyzeGoals(
   return await goalAnalystFlow(input);
 }
 
-function formatGoalsForPrompt(goals: Goal[]): string {
-    return goals.map(goal => `
-        - Meta: ${goal.name}
-        - Valor Total: R$${goal.totalAmount.toFixed(2)}
-        - Valor Atual: R$${goal.currentAmount.toFixed(2)}
-        - Prazo: ${new Date(goal.deadline).toLocaleDateString('pt-BR')}
-    `).join('');
-}
-
 const prompt = ai.definePrompt({
   name: 'goalAnalystPrompt',
   input: { schema: GoalAnalystInputSchema },
@@ -60,8 +51,8 @@ const prompt = ai.definePrompt({
     **Metas do Usuário:**
     {{#each goals}}
     - **Meta:** {{name}}
-      - **Valor Alvo:** {{totalAmount}}
-      - **Valor Atual:** {{currentAmount}}
+      - **Valor Alvo:** R$ {{totalAmount}}
+      - **Valor Atual:** R$ {{currentAmount}}
       - **Prazo:** {{deadline}}
     {{/each}}
     `,
