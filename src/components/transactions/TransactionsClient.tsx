@@ -14,9 +14,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeftRight, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Clock, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import TransactionDialog from "./TransactionDialog";
 
 function formatCurrency(amount: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
@@ -53,11 +54,25 @@ function BalanceCard({ title, value, variant, className }: { title: string, valu
 
 export default function TransactionsClient() {
   const [transactions, setTransactions, isLoading] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const sortedTransactions = transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedTransactions = useMemo(() => {
+    return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions]);
+
 
   const handleConfirmPayment = (txId: string) => {
     setTransactions(transactions.map(tx => tx.id === txId ? { ...tx, status: 'paid' } : tx));
+  };
+
+  const handleSaveTransaction = (data: Omit<Transaction, "id" | "status">) => {
+    const newTransaction: Transaction = {
+      ...data,
+      id: crypto.randomUUID(),
+      status: data.type === 'income' ? 'paid' : 'pending',
+    };
+    setTransactions([...transactions, newTransaction]);
+    setDialogOpen(false);
   };
   
   const { totalIncome, totalExpense, balance } = useMemo(() => {
@@ -65,7 +80,7 @@ export default function TransactionsClient() {
     let totalExpense = 0;
 
     transactions.forEach(tx => {
-        if(tx.status !== 'paid') return;
+        if(tx.status !== 'paid' && tx.type === 'expense') return;
 
         if (tx.type === 'income') {
             totalIncome += tx.amount;
@@ -81,9 +96,15 @@ export default function TransactionsClient() {
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
-      <header className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold font-headline">Painel Financeiro</h1>
-        <p className="text-muted-foreground">Acompanhe suas receitas, despesas e o balanço geral.</p>
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 className="text-2xl md:text-3xl font-bold font-headline">Painel Financeiro</h1>
+            <p className="text-muted-foreground">Acompanhe suas receitas, despesas e o balanço geral.</p>
+        </div>
+        <Button onClick={() => setDialogOpen(true)} className="w-full sm:w-auto">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Adicionar Transação
+        </Button>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -143,7 +164,7 @@ export default function TransactionsClient() {
                           <Badge variant="secondary" className="text-amber-700 bg-amber-100">
                              <Clock className="mr-1 h-3 w-3" />
                             Pendente
-                          </Badge>
+                          </badge>
                         )}
                       </TableCell>
                       <TableCell className={`text-right font-medium ${tx.type === 'expense' ? 'text-destructive' : 'text-green-600'}`}>
@@ -169,12 +190,18 @@ export default function TransactionsClient() {
                         <ArrowLeftRight className="h-10 w-10 text-primary" />
                     </div>
                     <h2 className="text-xl font-semibold mb-2">Nenhuma transação encontrada</h2>
-                    <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" para adicionar suas primeiras transações.</p>
+                    <p className="text-muted-foreground mb-4 max-w-sm">Use a "Importação Rápida" ou adicione manually sua primeira transação.</p>
                 </div>
             )}
           </ScrollArea>
         </CardContent>
       </Card>
+      <TransactionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={handleSaveTransaction}
+        transactionToEdit={null}
+      />
     </div>
   );
 }
