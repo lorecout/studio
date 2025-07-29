@@ -47,6 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     await firebaseSignOut(auth);
+    // Setting user to null immediately to avoid waiting for onAuthStateChanged
+    setUser(null); 
     router.push('/login');
   };
 

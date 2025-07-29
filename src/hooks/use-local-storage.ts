@@ -32,7 +32,7 @@ function useLocalStorageWithUser<T>(
     } finally {
       setLoading(false);
     }
-  }, [userKey, JSON.stringify(initialValue)]);
+  }, [userKey]);
 
   const setValue = useCallback(
     (value: T | ((val: T) => T)) => {
@@ -57,6 +57,11 @@ export function useLocalStorage<T>(
   key: string,
   initialValue: T
 ): [T, (value: T | ((val: T) => T)) => void, boolean] {
-    const { user } = useAuth();
-    return useLocalStorageWithUser(key, initialValue, user?.uid || null);
+    const { user, loading: authLoading } = useAuth();
+    const [value, setValue, dataLoading] = useLocalStorageWithUser(key, initialValue, user?.uid ?? null);
+
+    // Combine auth loading and data loading states
+    const isLoading = authLoading || dataLoading;
+
+    return [value, setValue, isLoading];
 }
