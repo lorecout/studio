@@ -14,11 +14,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeftRight, CheckCircle, Clock, PlusCircle } from "lucide-react";
+import { ArrowLeftRight, CheckCircle, Clock, PlusCircle, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import TransactionDialog from "./TransactionDialog";
 import { useAuth } from "@/hooks/use-auth";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 function formatCurrency(amount: number) {
@@ -65,6 +67,7 @@ export default function TransactionsClient() {
   const { user } = useAuth();
   const [transactions, setTransactions, isLoading] = useLocalStorage<Transaction[]>("realgoal-transactions", []);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
 
   const userTransactions = useMemo(() => {
     if (!transactions || !user) return [];
@@ -72,6 +75,20 @@ export default function TransactionsClient() {
         .filter(tx => tx.userId === user.uid)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, user]);
+  
+  const handleNewTransaction = () => {
+    setTransactionToEdit(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditTransaction = (tx: Transaction) => {
+    setTransactionToEdit(tx);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteTransaction = (txId: string) => {
+    setTransactions(current => (current ?? []).filter(tx => tx.id !== txId));
+  };
 
   const handleConfirmPayment = (txId: string) => {
     setTransactions((currentTransactions) =>
@@ -81,15 +98,21 @@ export default function TransactionsClient() {
     );
   };
 
-  const handleSaveTransaction = (data: Omit<Transaction, "id" | "status" | "userId">) => {
+  const handleSaveTransaction = (data: Omit<Transaction, "id" | "status" | "userId">, id?: string) => {
     if (!user) return;
-    const newTransaction: Transaction = {
-      id: crypto.randomUUID(),
-      status: data.type === 'income' ? 'paid' : 'pending',
-      userId: user.uid,
-      ...data,
-    };
-    setTransactions((prevTxs) => [...(prevTxs || []), newTransaction]);
+    if (id) {
+        // Editing
+        setTransactions(current => (current ?? []).map(tx => tx.id === id ? {...tx, ...data } : tx));
+    } else {
+        // Creating
+        const newTransaction: Transaction = {
+            id: crypto.randomUUID(),
+            status: data.type === 'income' ? 'paid' : 'pending',
+            userId: user.uid,
+            ...data,
+        };
+        setTransactions((prevTxs) => [...(prevTxs || []), newTransaction]);
+    }
     setDialogOpen(false);
   };
 
@@ -117,7 +140,7 @@ export default function TransactionsClient() {
           <h1 className="text-2xl md:text-3xl font-bold font-headline">Painel Financeiro</h1>
           <p className="text-muted-foreground">Acompanhe suas receitas, despesas e o balanço geral.</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="w-full sm:w-auto">
+        <Button onClick={handleNewTransaction} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
           Adicionar Transação
         </Button>
@@ -156,7 +179,7 @@ export default function TransactionsClient() {
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="hidden md:table-cell text-right">Data</TableHead>
-                    <TableHead className="text-right">Ação</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -189,10 +212,43 @@ export default function TransactionsClient() {
                       </TableCell>
                       <TableCell className="text-right">
                         {tx.status === 'pending' && (
-                          <Button variant="ghost" size="sm" onClick={() => handleConfirmPayment(tx.id)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleConfirmPayment(tx.id)} className="mr-2">
                             Confirmar
                           </Button>
                         )}
+                         <AlertDialog>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditTransaction(tx)}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </DropdownMenuItem>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Excluir
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Essa ação não pode ser desfeita. Isso excluirá permanentemente a transação.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteTransaction(tx.id)}>Excluir</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -214,7 +270,7 @@ export default function TransactionsClient() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSave={handleSaveTransaction}
-        transactionToEdit={null}
+        transactionToEdit={transactionToEdit}
       />
     </div>
   );

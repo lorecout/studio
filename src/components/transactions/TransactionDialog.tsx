@@ -34,8 +34,8 @@ import { useEffect } from "react";
 interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: Omit<Transaction, "id" | "status" | "userId">) => void;
-  transactionToEdit: Omit<Transaction, "id" | "status" | "userId"> | null;
+  onSave: (data: Omit<Transaction, "id" | "status" | "userId">, id?: string) => void;
+  transactionToEdit: Transaction | null;
 }
 
 const transactionSchema = z.object({
@@ -80,10 +80,10 @@ export default function TransactionDialog({ open, onOpenChange, onSave, transact
   }, [transactionToEdit, form, open]);
   
   const onSubmit = (data: TransactionFormData) => {
-    onSave({
-        ...data,
-        date: data.date.toISOString()
-    });
+    onSave(
+        { ...data, date: data.date.toISOString() },
+        transactionToEdit?.id
+    );
   };
 
   return (
@@ -210,7 +210,7 @@ export default function TransactionDialog({ open, onOpenChange, onSave, transact
             </div>
              <DialogFooter>
                 <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                <Button type="submit" disabled={!form.formState.isDirty || !form.formState.isValid}>Salvar</Button>
+                <Button type="submit" disabled={!form.formState.isValid}>Salvar</Button>
             </DialogFooter>
           </form>
         </Form>
