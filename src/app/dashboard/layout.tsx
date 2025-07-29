@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MoreVertical, LogOut, ArrowLeftRight, FileInput, Target, Bot } from "lucide-react";
+import { MoreVertical, LogOut, ArrowLeftRight, FileInput, Target, Bot, Sun, Moon, Laptop } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -16,9 +16,10 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/components/ui/theme-provider";
 
 const Logo = () => (
     <Link href="/dashboard/transactions" className="flex items-center gap-2 font-semibold">
@@ -43,6 +44,7 @@ const Logo = () => (
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
+  const { setTheme } = useTheme();
 
   if (loading) {
     return (
@@ -122,6 +124,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="mb-2 w-56" side="top" align="start">
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                            <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <Moon className="absolute mr-2 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                            <span className="ml-2">Tema</span>
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => setTheme("light")}>
+                                    <Sun className="mr-2 h-4 w-4" />
+                                    <span>Claro</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                                    <Moon className="mr-2 h-4 w-4" />
+                                    <span>Escuro</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setTheme("system")}>
+                                    <Laptop className="mr-2 h-4 w-4" />
+                                    <span>Sistema</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenuSub>
                     <DropdownMenuItem onClick={logout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         Sair
