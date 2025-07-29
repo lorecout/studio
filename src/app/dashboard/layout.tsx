@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -17,7 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth"; // Changed
+import { useAuth } from "@/hooks/use-auth";
 
 const Logo = () => (
     <Link href="/dashboard/transactions" className="flex items-center gap-2 font-semibold">
@@ -41,7 +42,7 @@ const Logo = () => (
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, loading, logout } = useAuth(); // Changed
+  const { user, loading, logout } = useAuth();
 
   if (loading) {
     return (
@@ -49,6 +50,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
         </div>
     );
+  }
+
+  const getUserDisplayName = () => {
+    if (!user) return "Usuário";
+    if (user.isAnonymous) return "Convidado";
+    return user.displayName || user.email || "Usuário";
+  };
+
+  const getUserDisplayEmail = () => {
+      if (!user) return "Não autenticado";
+      if (user.isAnonymous) return "Sessão temporária";
+      return user.email || "Não autenticado";
   }
 
   return (
@@ -98,12 +111,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-auto w-full justify-start gap-3 p-2 text-left">
                         <Avatar className="h-9 w-9">
-                            <AvatarImage src={user?.photoURL || "https://placehold.co/36x36"} alt="User Avatar" />
-                            <AvatarFallback>{user?.email?.[0].toUpperCase() || "U"}</AvatarFallback>
+                            <AvatarImage src={user?.isAnonymous ? "" : user?.photoURL || "https://placehold.co/36x36"} alt="User Avatar" />
+                            <AvatarFallback>{getUserDisplayName()[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col text-left">
-                            <span className="text-sm font-medium truncate">{user?.displayName || user?.email || "Usuário"}</span>
-                            <span className="text-xs text-sidebar-foreground/70 truncate">{user?.email || 'Não autenticado'}</span>
+                            <span className="text-sm font-medium truncate">{getUserDisplayName()}</span>
+                            <span className="text-xs text-sidebar-foreground/70 truncate">{getUserDisplayEmail()}</span>
                         </div>
                         <MoreVertical className="ml-auto h-5 w-5" />
                     </Button>

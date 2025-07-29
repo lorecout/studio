@@ -1,16 +1,17 @@
+
 "use client";
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 48 48" {...props}>
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -63,6 +65,24 @@ export default function LoginPage() {
     }
   };
 
+  const handleGuestSignIn = async () => {
+    setIsGuestLoading(true);
+    try {
+        await signInAnonymously(auth);
+        router.push('/dashboard/transactions');
+    } catch (error: any) {
+        toast({
+            title: "Erro ao entrar como convidado",
+            description: "Não foi possível fazer o login anônimo. Tente novamente.",
+            variant: "destructive",
+          });
+    } finally {
+        setIsGuestLoading(false);
+    }
+  };
+  
+  const anyLoading = isLoading || isGoogleLoading || isGuestLoading;
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-sm">
@@ -86,7 +106,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading || isGoogleLoading}
+                disabled={anyLoading}
               />
             </div>
             <div className="space-y-2">
@@ -97,10 +117,10 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading || isGoogleLoading}
+                disabled={anyLoading}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+            <Button type="submit" className="w-full" disabled={anyLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Entrar
             </Button>
@@ -113,10 +133,16 @@ export default function LoginPage() {
                 <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
             </div>
           </div>
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
-              {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-5 w-5" />}
-              Google
-          </Button>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={anyLoading}>
+                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-5 w-5" />}
+                Google
+            </Button>
+            <Button variant="outline" className="w-full" onClick={handleGuestSignIn} disabled={anyLoading}>
+                {isGuestLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <User className="mr-2 h-4 w-4" />}
+                Entrar como Convidado
+            </Button>
+          </div>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Não tem uma conta?{' '}
             <Link href="/register" className="font-medium text-primary hover:underline">
