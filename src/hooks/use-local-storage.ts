@@ -32,7 +32,7 @@ function useLocalStorageWithUser<T>(
     } finally {
       setLoading(false);
     }
-  }, [userKey]);
+  }, [userKey, initialValue]);
 
   const setValue = useCallback(
     (value: T | ((val: T) => T)) => {
@@ -58,9 +58,11 @@ export function useLocalStorage<T>(
   initialValue: T
 ): [T, (value: T | ((val: T) => T)) => void, boolean] {
     const { user, loading: authLoading } = useAuth();
-    const [value, setValue, dataLoading] = useLocalStorageWithUser(key, initialValue, user?.uid ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const stableInitialValue = useCallback(() => initialValue, []);
+    
+    const [value, setValue, dataLoading] = useLocalStorageWithUser(key, stableInitialValue(), user?.uid ?? null);
 
-    // Combine auth loading and data loading states
     const isLoading = authLoading || dataLoading;
 
     return [value, setValue, isLoading];
