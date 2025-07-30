@@ -1,15 +1,10 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  // This is the simplest possible configuration to address the root error.
-  // We are removing all dynamic logic and experimental features to prevent the restart loop.
-  // The error message consistently points to `allowedDevOrigins`.
-  // We will use the most direct, wildcard-based solution.
-  allowedDevOrigins: [
-    'https://*.cloudworkstations.dev',
-  ],
-
-  // These settings are essential to prevent build failures in the Studio environment.
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
