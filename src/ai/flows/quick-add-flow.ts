@@ -43,9 +43,9 @@ const prompt = ai.definePrompt({
     Sua tarefa é analisar o texto fornecido e converter cada item em um objeto de transação estruturado.
 
     **Instruções Cruciais:**
-    1.  Leia o texto e identifique cada transação individual. Cada linha geralmente representa uma transação.
+    1.  Leia o texto e identifique todas as transações presentes. Cada linha, frase ou item pode representar uma transação. Se houver múltiplos pagamentos ou dívidas no texto, extraia todos eles separadamente.
     2.  Para cada transação, extraia a descrição, o valor e a categoria. O tipo e a data são opcionais.
-    3.  **Descrição:** O que foi a transação. Seja conciso.
+    3.  **Descrição:** O que foi a transação. Seja conciso. Se o texto contiver valor, destinatário e data, a descrição deve ser apenas o nome ou destinatário (exemplo: para "3 reais para davi dia 2", a descrição deve ser "Davi").
     4.  **Valor:** O montante numérico. Se não for especificado, assuma 0.
     5.  **Categoria:** Tente inferir uma categoria apropriada (ex: 'Alimentação', 'Transporte', 'Lazer', 'Salário', 'Moradia'). Se não conseguir, use 'Outros'.
     6.  **Tipo:** Determine se é uma despesa ('expense') ou uma receita ('income'). A maioria será despesa por padrão, a menos que palavras como 'salário', 'bônus', 'recebi', 'venda' indiquem o contrário.
